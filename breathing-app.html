@@ -1,0 +1,463 @@
+<div id="breathe-app">
+<style>
+  #breathe-app {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    background: #1a6bb5 !important;
+    color: #fff !important;
+    width: 100%;
+    padding: 40px 24px 60px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    box-sizing: border-box;
+  }
+
+  #breathe-app * {
+    box-sizing: border-box;
+    font-family: inherit !important;
+    color: inherit !important;
+  }
+
+  #breathe-app h1 {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 32px !important;
+    padding: 0 !important;
+    align-self: flex-start;
+    color: #fff !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    line-height: 1.2 !important;
+  }
+
+  /* ── Orb ── */
+  #ba-orb-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 8px;
+  }
+
+  #ba-orb {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25) !important;
+    border: 3px solid rgba(255,255,255,0.6) !important;
+    transition: transform 0.3s ease;
+    box-shadow: 0 0 40px rgba(255,255,255,0.15);
+    display: block;
+  }
+
+  #ba-phase-label {
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em;
+    min-height: 1.8rem;
+    color: #fff !important;
+  }
+
+  #ba-timer-label {
+    font-size: 3rem !important;
+    font-weight: 300 !important;
+    letter-spacing: -0.02em;
+    min-height: 3.5rem;
+    font-variant-numeric: tabular-nums;
+    color: #fff !important;
+  }
+
+  #ba-cycle-label {
+    font-size: 0.95rem !important;
+    opacity: 0.75;
+    min-height: 1.2rem;
+    color: #fff !important;
+  }
+
+  /* ── Controls ── */
+  #ba-controls {
+    width: 100%;
+    max-width: 400px;
+    background: rgba(255,255,255,0.12) !important;
+    border-radius: 20px !important;
+    padding: 24px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px;
+    margin-bottom: 32px;
+    border: none !important;
+  }
+
+  .ba-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ba-row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ba-row-header label {
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ba-val {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    background: rgba(255,255,255,0.2) !important;
+    padding: 2px 10px !important;
+    border-radius: 20px !important;
+    color: #fff !important;
+  }
+
+  .ba-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2) !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem !important;
+    color: #fff !important;
+    flex-shrink: 0;
+  }
+
+  .ba-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.2);
+    margin: 2px 0;
+    border: none;
+  }
+
+  #breathe-app input[type=range] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 100% !important;
+    height: 6px !important;
+    border-radius: 3px !important;
+    background: rgba(255,255,255,0.3) !important;
+    outline: none !important;
+    cursor: pointer !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  #breathe-app input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+
+  #ba-length-display {
+    font-size: 0.85rem !important;
+    opacity: 0.75;
+    text-align: center;
+    color: #fff !important;
+  }
+
+  /* ── Buttons ── */
+  #ba-btn-row {
+    display: flex !important;
+    gap: 14px !important;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  #breathe-app button {
+    flex: 1 !important;
+    padding: 16px !important;
+    border: none !important;
+    border-radius: 14px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: opacity 0.15s !important;
+    outline: none !important;
+    box-shadow: none !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #breathe-app button:active { opacity: 0.75 !important; }
+
+  #ba-btn-start {
+    background: #fff !important;
+    color: #1a6bb5 !important;
+  }
+
+  #ba-btn-reset {
+    background: rgba(255,255,255,0.2) !important;
+    color: #fff !important;
+  }
+</style>
+
+<h1>Breathe</h1>
+
+<div id="ba-orb-wrap">
+  <div id="ba-orb"></div>
+  <div id="ba-phase-label">—</div>
+  <div id="ba-timer-label"></div>
+  <div id="ba-cycle-label"></div>
+</div>
+
+<div id="ba-controls">
+  <div class="ba-row">
+    <div class="ba-row-header">
+      <label><span class="ba-icon">↗</span> Inhale</label>
+      <span class="ba-val" id="ba-val-inhale">5.5s</span>
+    </div>
+    <input type="range" id="ba-sl-inhale" min="1" max="30" step="0.5" value="5.5">
+  </div>
+
+  <div class="ba-row">
+    <div class="ba-row-header">
+      <label><span class="ba-icon">→</span> Hold (after inhale)</label>
+      <span class="ba-val" id="ba-val-hold1">0s</span>
+    </div>
+    <input type="range" id="ba-sl-hold1" min="0" max="20" value="0">
+  </div>
+
+  <div class="ba-divider"></div>
+
+  <div class="ba-row">
+    <div class="ba-row-header">
+      <label><span class="ba-icon">↘</span> Exhale</label>
+      <span class="ba-val" id="ba-val-exhale">5.5s</span>
+    </div>
+    <input type="range" id="ba-sl-exhale" min="1" max="30" step="0.5" value="5.5">
+  </div>
+
+  <div class="ba-row">
+    <div class="ba-row-header">
+      <label><span class="ba-icon">→</span> Hold (after exhale)</label>
+      <span class="ba-val" id="ba-val-hold2">0s</span>
+    </div>
+    <input type="range" id="ba-sl-hold2" min="0" max="20" value="0">
+  </div>
+
+  <div class="ba-divider"></div>
+
+  <div class="ba-row">
+    <div class="ba-row-header">
+      <label><span class="ba-icon">↺</span> Repeat</label>
+      <span class="ba-val" id="ba-val-repeat">90×</span>
+    </div>
+    <input type="range" id="ba-sl-repeat" min="1" max="200" value="90">
+  </div>
+
+  <div id="ba-length-display">Exercise length: —</div>
+</div>
+
+<div id="ba-btn-row">
+  <button id="ba-btn-start" onclick="baToggleStart()">Start</button>
+  <button id="ba-btn-reset" onclick="baReset()">Reset</button>
+</div>
+
+<script>
+(function() {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let actx = null;
+
+  function ensureAudio() {
+    if (!actx) actx = new AudioCtx();
+    if (actx.state === 'suspended') actx.resume();
+  }
+
+  function chime(freq, dur = 1.2) {
+    ensureAudio();
+    const t = actx.currentTime;
+    const osc = actx.createOscillator();
+    const gain = actx.createGain();
+    osc.connect(gain); gain.connect(actx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.35, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.start(t); osc.stop(t + dur);
+  }
+
+  const G6 = 1567.98, C6 = 1046.50;
+
+  const sl = {
+    inhale: document.getElementById('ba-sl-inhale'),
+    hold1:  document.getElementById('ba-sl-hold1'),
+    exhale: document.getElementById('ba-sl-exhale'),
+    hold2:  document.getElementById('ba-sl-hold2'),
+    repeat: document.getElementById('ba-sl-repeat'),
+  };
+
+  function getV() {
+    return {
+      inhale: +sl.inhale.value, hold1: +sl.hold1.value,
+      exhale: +sl.exhale.value, hold2: +sl.hold2.value,
+      repeat: +sl.repeat.value,
+    };
+  }
+
+  function fmtTime(s) {
+    const m = Math.floor(s / 60), r = s % 60;
+    return m > 0 ? `${m} min, ${r} sec` : `${r} sec`;
+  }
+
+  function updateLabels() {
+    const v = getV();
+    document.getElementById('ba-val-inhale').textContent = v.inhale + 's';
+    document.getElementById('ba-val-hold1').textContent  = v.hold1 + 's';
+    document.getElementById('ba-val-exhale').textContent = v.exhale + 's';
+    document.getElementById('ba-val-hold2').textContent  = v.hold2 + 's';
+    document.getElementById('ba-val-repeat').textContent = v.repeat + '×';
+    const total = (v.inhale + v.hold1 + v.exhale + v.hold2) * v.repeat;
+    document.getElementById('ba-length-display').textContent = 'Exercise length: ' + fmtTime(total);
+  }
+
+  Object.values(sl).forEach(s => s.addEventListener('input', updateLabels));
+  updateLabels();
+
+  let running = false, rafId = null, startAt = null;
+  let phaseIdx = 0, cycle = 0, phases = [];
+  let wakeLock = null;
+
+  async function acquireWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (running && document.visibilityState === 'visible') acquireWakeLock();
+  });
+
+  function buildPhases(v) {
+    const list = [];
+    for (let i = 0; i < v.repeat; i++) {
+      list.push({ label: 'Inhale',  dur: v.inhale, scale: 1.55, freq: G6 });
+      if (v.hold1 > 0) list.push({ label: 'Hold', dur: v.hold1, scale: 1.55 });
+      list.push({ label: 'Exhale',  dur: v.exhale, scale: 0.7,  freq: C6 });
+      if (v.hold2 > 0) list.push({ label: 'Hold', dur: v.hold2, scale: 0.7  });
+    }
+    return list;
+  }
+
+  const orb   = document.getElementById('ba-orb');
+  const phLbl = document.getElementById('ba-phase-label');
+  const tmLbl = document.getElementById('ba-timer-label');
+  const cyLbl = document.getElementById('ba-cycle-label');
+  const btnS  = document.getElementById('ba-btn-start');
+
+  function setPhase(p) {
+    orb.style.transform = `scale(${p.scale})`;
+    phLbl.textContent = p.label;
+    if (p.freq) chime(p.freq);
+  }
+
+  function stepsPerCycle(v) {
+    return 2 + (v.hold1 > 0 ? 1 : 0) + (v.hold2 > 0 ? 1 : 0);
+  }
+
+  function tick() {
+    if (!running) return;
+    const phase = phases[phaseIdx];
+    if (!phase) { finish(); return; }
+
+    const elapsed = (Date.now() - startAt) / 1000;
+    const remain = Math.max(0, phase.dur - elapsed);
+    tmLbl.textContent = remain.toFixed(1) + 's';
+
+    const prog = Math.min(elapsed / phase.dur, 1);
+    if (phase.label === 'Inhale')      orb.style.transform = `scale(${0.7 + prog * 0.85})`;
+    else if (phase.label === 'Exhale') orb.style.transform = `scale(${1.55 - prog * 0.85})`;
+
+    if (elapsed >= phase.dur) {
+      phaseIdx++;
+      if (phaseIdx >= phases.length) { finish(); return; }
+      const v = getV();
+      cycle = Math.floor(phaseIdx / stepsPerCycle(v)) + 1;
+      cyLbl.textContent = `Cycle ${Math.min(cycle, v.repeat)} of ${v.repeat}`;
+      setPhase(phases[phaseIdx]);
+      startAt = Date.now();
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function start() {
+    const v = getV();
+    phases = buildPhases(v); phaseIdx = 0; cycle = 1; running = true;
+    btnS.textContent = 'Pause';
+    setSliders(false);
+    cyLbl.textContent = `Cycle 1 of ${v.repeat}`;
+    setPhase(phases[0]);
+    startAt = Date.now();
+    acquireWakeLock();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function pause() {
+    running = false; cancelAnimationFrame(rafId);
+    btnS.textContent = 'Resume';
+    releaseWakeLock();
+  }
+
+  function resume() {
+    running = true; btnS.textContent = 'Pause';
+    const remaining = parseFloat(tmLbl.textContent);
+    startAt = Date.now() - (phases[phaseIdx].dur - remaining) * 1000;
+    acquireWakeLock();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function finish() {
+    running = false; cancelAnimationFrame(rafId);
+    releaseWakeLock();
+    orb.style.transform = 'scale(1)';
+    phLbl.textContent = 'Done'; tmLbl.textContent = ''; cyLbl.textContent = '';
+    btnS.textContent = 'Start'; setSliders(true);
+  }
+
+  window.baReset = function() {
+    running = false; cancelAnimationFrame(rafId);
+    releaseWakeLock();
+    phases = []; phaseIdx = 0; cycle = 0;
+    orb.style.transform = 'scale(1)';
+    phLbl.textContent = '—'; tmLbl.textContent = ''; cyLbl.textContent = '';
+    btnS.textContent = 'Start'; setSliders(true);
+  };
+
+  window.baToggleStart = function() {
+    ensureAudio();
+    if (!running && phases.length === 0) { start(); return; }
+    if (!running) { resume(); return; }
+    pause();
+  };
+
+  function setSliders(on) {
+    Object.values(sl).forEach(s => s.disabled = !on);
+  }
+})();
+</script>
+</div>
