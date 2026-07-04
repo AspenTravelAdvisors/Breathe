@@ -191,7 +191,8 @@
     align-items: center;
   }
 
-  .ba-row-header label {
+  .ba-row-header label,
+  .ba-toggle-row label.ba-toggle-label {
     font-size: 0.95rem !important;
     font-weight: 500 !important;
     display: flex !important;
@@ -261,6 +262,72 @@
     font-size: 0.85rem !important;
     opacity: 0.75;
     text-align: center;
+    color: #fff !important;
+  }
+
+  /* ── Toggle switches ── */
+  .ba-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ba-toggle-row.ba-unsupported .ba-toggle-label { opacity: 0.4; }
+
+  .ba-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 30px;
+    flex-shrink: 0;
+  }
+
+  .ba-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ba-switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.25) !important;
+    transition: background 0.2s ease;
+    cursor: pointer;
+  }
+
+  .ba-switch-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: transform 0.2s ease;
+  }
+
+  .ba-switch input:checked + .ba-switch-track {
+    background: rgba(255,255,255,0.55) !important;
+  }
+
+  .ba-switch input:checked + .ba-switch-track::after {
+    transform: translateX(20px);
+  }
+
+  .ba-switch input:disabled + .ba-switch-track {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .ba-hint {
+    font-size: 0.75rem !important;
+    opacity: 0.6;
     color: #fff !important;
   }
 
@@ -362,6 +429,24 @@
   </div>
 
   <div id="ba-length-display">Exercise length: —</div>
+
+  <div class="ba-divider"></div>
+
+  <div class="ba-toggle-row">
+    <label class="ba-toggle-label" for="ba-tg-sound"><span class="ba-icon">♪</span> Sound</label>
+    <label class="ba-switch">
+      <input type="checkbox" id="ba-tg-sound" checked>
+      <span class="ba-switch-track" aria-hidden="true"></span>
+    </label>
+  </div>
+
+  <div class="ba-toggle-row" id="ba-haptic-row">
+    <label class="ba-toggle-label" for="ba-tg-haptic"><span class="ba-icon">◈</span> Haptics <span class="ba-hint" id="ba-haptic-hint"></span></label>
+    <label class="ba-switch">
+      <input type="checkbox" id="ba-tg-haptic" checked>
+      <span class="ba-switch-track" aria-hidden="true"></span>
+    </label>
+  </div>
 </div>
 
 <div id="ba-btn-row">
@@ -379,7 +464,47 @@
     if (actx.state === 'suspended') actx.resume();
   }
 
+  const tgSound  = document.getElementById('ba-tg-sound');
+  const tgHaptic = document.getElementById('ba-tg-haptic');
+  const canVibrate = 'vibrate' in navigator;
+
+  // Restore saved preferences (default: on)
+  try {
+    tgSound.checked  = localStorage.getItem('ba-sound')  !== 'off';
+    tgHaptic.checked = localStorage.getItem('ba-haptic') !== 'off';
+  } catch (_) {}
+
+  if (!canVibrate) {
+    tgHaptic.checked = false;
+    tgHaptic.disabled = true;
+    document.getElementById('ba-haptic-row').classList.add('ba-unsupported');
+    document.getElementById('ba-haptic-hint').textContent = '(not supported on this device)';
+  }
+
+  tgSound.addEventListener('change', () => {
+    try { localStorage.setItem('ba-sound', tgSound.checked ? 'on' : 'off'); } catch (_) {}
+    if (tgSound.checked) ensureAudio();
+  });
+
+  tgHaptic.addEventListener('change', () => {
+    try { localStorage.setItem('ba-haptic', tgHaptic.checked ? 'on' : 'off'); } catch (_) {}
+    if (tgHaptic.checked) buzz([20]); // confirmation pulse
+  });
+
+  function buzz(pattern) {
+    if (!canVibrate || !tgHaptic.checked) return;
+    try { navigator.vibrate(pattern); } catch (_) {}
+  }
+
+  const HAPTIC = {
+    Inhale: [40],
+    Exhale: [30, 80, 30],
+    Hold:   [15],
+    Done:   [60, 80, 60, 80, 60],
+  };
+
   function chime(freq, dur = 1.2) {
+    if (!tgSound.checked) return;
     ensureAudio();
     const t = actx.currentTime;
     const osc = actx.createOscillator();
@@ -492,6 +617,7 @@
     setGlow(s);
     phLbl.textContent = p.label;
     if (p.freq) chime(p.freq);
+    buzz(HAPTIC[p.label] || [20]);
   }
 
   function stepsPerCycle(v) {
@@ -542,6 +668,7 @@
     running = false; cancelAnimationFrame(rafId);
     btnS.textContent = 'Resume';
     releaseWakeLock();
+    if (canVibrate) navigator.vibrate(0);
   }
 
   function resume() {
@@ -555,6 +682,7 @@
   function finish() {
     running = false; cancelAnimationFrame(rafId);
     releaseWakeLock();
+    buzz(HAPTIC.Done);
     goIdle();
     phLbl.textContent = 'Done'; tmLbl.textContent = ''; cyLbl.textContent = '';
     btnS.textContent = 'Start'; setSliders(true);
@@ -563,6 +691,7 @@
   window.baReset = function() {
     running = false; cancelAnimationFrame(rafId);
     releaseWakeLock();
+    if (canVibrate) navigator.vibrate(0);
     phases = []; phaseIdx = 0; cycle = 0;
     goIdle();
     phLbl.textContent = '—'; tmLbl.textContent = ''; cyLbl.textContent = '';
@@ -570,7 +699,7 @@
   };
 
   window.baToggleStart = function() {
-    ensureAudio();
+    if (tgSound.checked) ensureAudio();
     if (!running && phases.length === 0) { start(); return; }
     if (!running) { resume(); return; }
     pause();
